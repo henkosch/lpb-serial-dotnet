@@ -10,8 +10,7 @@ namespace LpbSerialDotnet.Input
     {
         public static IObservable<byte> ReadByteStream(string fileName)
         {
-            return ReadLines(fileName)
-                .ToByteStream();
+            return ReadLines(fileName).ToByteStream();
         }
 
         public static IObservable<string> ReadLines(string fileName)
@@ -19,8 +18,8 @@ namespace LpbSerialDotnet.Input
             return Observable.Using(
                 () => new StreamReader(fileName),
                 reader => Observable.FromAsync(reader.ReadLineAsync)
-                                    .Repeat()
-                                    .TakeWhile(line => line != null));
+                    .Repeat()
+                    .TakeWhile(line => line != null));
         }
 
         public static IObservable<byte> ToByteStream(this IObservable<string> lines)

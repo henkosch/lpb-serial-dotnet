@@ -11,12 +11,13 @@ namespace LpbSerialDotnet
         static void Main(string[] args)
         {
             var useSerialPort = false;
+            var dumpFileName = "dump.txt";
 
-            var input = useSerialPort 
-                ? Serial.ReadByteStream()
-                : HexDumpFile.ReadByteStream("dump.txt");
+            var inputBytes = useSerialPort
+                ? Serial.ReadByteStream().Select(Serial.InvertByte)
+                : HexDumpFile.ReadByteStream(dumpFileName);
 
-            input
+            inputBytes
                 .ToTelegrams()
                 .ForEachAsync(PrintTelegram)
                 .Wait();

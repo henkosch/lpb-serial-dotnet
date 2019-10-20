@@ -8,11 +8,11 @@ namespace LpbSerialDotnet.Input
 {
     public static class Serial
     {
-        public static IObservable<byte> ReadByteStream()
+        public static IObservable<byte> ReadByteStream(string portName = "/dev/serial0")
         {
             return Observable.Using(() => new SerialPort()
             {
-                PortName = "/dev/serial0",
+                PortName = portName,
                 BaudRate = 4800,
                 Parity = Parity.Odd,
                 DataBits = 8,
@@ -22,13 +22,11 @@ namespace LpbSerialDotnet.Input
                 WriteTimeout = 500
             }, serialPort => {
                 serialPort.Open();
-                return serialPort
-                    .ToByteStream()
-                    .Select(InvertByte);
+                return serialPort.ToByteStream();
             });
         }
 
-        static byte InvertByte(byte input) => (byte)(input^0xff);
+        public static byte InvertByte(byte input) => (byte)(input^0xff);
 
         public static IObservable<byte> ToByteStream(this SerialPort serialPort)
         {
