@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 
 namespace LpbSerialDotnet.Protocol
 {
@@ -14,6 +15,7 @@ namespace LpbSerialDotnet.Protocol
         public byte Source { get; set; }
         public byte[] Unknown1 { get; set; }
         public byte Type { get; set; }
+        public uint Command { get; set; }
 
         public Telegram(IEnumerable<byte> dataBytes)
         {
@@ -28,6 +30,7 @@ namespace LpbSerialDotnet.Protocol
             Source = reader.ReadByte();
             Unknown1 = reader.ReadBytes(4);
             Type = reader.ReadByte();
+            Command = (uint)IPAddress.NetworkToHostOrder(reader.ReadInt32());
         }
     }
 }

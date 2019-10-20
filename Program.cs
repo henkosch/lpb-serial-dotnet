@@ -25,7 +25,7 @@ namespace LpbSerialDotnet
 
         static void PrintTelegram(Telegram telegram)
         {
-            Console.WriteLine(Formatter.ByteArrayToHexString(telegram.Data));
+            //Console.WriteLine(Formatter.ByteArrayToHexString(telegram.Data));
             Console.WriteLine(Formatter.TelegramToString(telegram));
         }
     }
