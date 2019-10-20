@@ -4,7 +4,7 @@ namespace LpbSerialDotnet.Protocol
 {
     enum Address : byte
     {
-        HEIZ = 0x00,
+        HEAT = 0x00,
         EM1 = 0x03,
         EM2 = 0x04,
         RGT1 = 0x06,

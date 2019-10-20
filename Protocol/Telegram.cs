@@ -1,64 +1,33 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 
 namespace LpbSerialDotnet.Protocol
 {
-    class Telegram
+    public class Telegram
     {
-        private const byte magicByte = 0x78;
+        public byte[] Data { get; private set; }
 
-        public enum States
+        public byte MagicByte { get; set; }
+        public byte Length { get; set; }
+        public byte Destination { get; set; }
+        public byte Source { get; set; }
+        public byte[] Unknown1 { get; set; }
+        public byte Type { get; set; }
+
+        public Telegram(IEnumerable<byte> dataBytes)
         {
-            WaitingForMagicByte,
-            WaitingForLength,
-            WaitingForRemaining
-        }
+            Data = dataBytes.ToArray();
 
-        private States state;
+            using var stream = new MemoryStream(Data);
+            using var reader = new BinaryReader(stream);
 
-        private int remainingBytes;
-        private List<byte> telegram;
-
-        public event Action<byte[]> OnTelegram;
-
-        public Telegram()
-        {
-            reset();
-        }
-
-        private void reset()
-        {
-            state = States.WaitingForMagicByte;
-            remainingBytes = 0;
-            telegram = new List<byte>();
-        }
-
-        public void AddByte(byte data)
-        {
-            switch (state)
-            {
-                case States.WaitingForMagicByte:
-                    if (data == magicByte)
-                    {
-                        telegram.Add(data);
-                        state = States.WaitingForLength;
-                    }
-                    break;
-                case States.WaitingForLength:
-                    remainingBytes = data - 1;
-                    telegram.Add(data);
-                    state = States.WaitingForRemaining;
-                    break;
-                case States.WaitingForRemaining:
-                    telegram.Add(data);
-                    remainingBytes -= 1;
-                    if (remainingBytes <= 0)
-                    {
-                        OnTelegram?.Invoke(telegram.ToArray());
-                        reset();
-                    }
-                    break;
-            }
+            MagicByte = reader.ReadByte();
+            Length = reader.ReadByte();
+            Destination = reader.ReadByte();
+            Source = reader.ReadByte();
+            Unknown1 = reader.ReadBytes(4);
+            Type = reader.ReadByte();
         }
     }
 }

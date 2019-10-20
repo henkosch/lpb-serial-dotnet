@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using System.Reactive.Linq;
 using LpbSerialDotnet.Input;
 using LpbSerialDotnet.Output;
@@ -19,32 +18,17 @@ namespace LpbSerialDotnet
 
             input
                 .ToTelegrams()
-                .Select(PrintBytes)
-                .Select(ToMessage)
-                .Select(PrintMessage)
-                .ForEachAsync(NoOp)
+                .ForEachAsync(PrintTelegram)
                 .Wait();
         }
-        
-        static byte[] PrintBytes(byte[] data)
-        {
-            Console.WriteLine(Formatter.ByteArrayToHexString(data));
-            return data;
-        }
 
-        static Message ToMessage(byte[] telegram)
+        static void PrintTelegram(Telegram telegram)
         {
-            return new Message(telegram);
-        }
-
-        static Message PrintMessage(Message message)
-        {
-            Console.WriteLine(message);
-            return message;
-        }
-
-        static void NoOp<T>(T input)
-        {
+            Console.WriteLine(Formatter.ByteArrayToHexString(telegram.Data));
+            Console.WriteLine("Dst: {0}, Src: {1}, Type: {2}",
+                Formatter.SerialAddr(telegram.Destination),
+                Formatter.SerialAddr(telegram.Source),
+                telegram.Type);
         }
     }
 }
