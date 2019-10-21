@@ -19,15 +19,25 @@ namespace LpbSerialDotnet.Output
             return ByteToHex(value);
         }
 
-        public static string CommandToString(uint commandId)
+        public static string CommandToString(Telegram telegram)
         {
-            var bytes = BitConverter.GetBytes(commandId);
+            var commandType = telegram.CommandType;
+            var bytes = BitConverter.GetBytes(telegram.CommandId);
             var bytesStr = BitConverter.IsLittleEndian
                 ? ByteArrayToHexString(bytes.Reverse().ToArray())
                 : ByteArrayToHexString(bytes);
-            if (Command.Commands.TryGetValue(commandId, out var command))
+            if (commandType != null)
             {
-                return string.Format("{0} ({1})", bytesStr, command.Desc);
+                switch (commandType.ValueType)
+                {
+                    case Protocol.ValueType.VT_TEMP:
+                        return string.Format("{0} ({1}): {2}ºC", 
+                            bytesStr, 
+                            commandType.Description, 
+                            telegram.Temperature);
+                    default:
+                        return string.Format("{0} ({1})", bytesStr, commandType.Description);
+                }
             }
             else
             {
@@ -37,11 +47,12 @@ namespace LpbSerialDotnet.Output
 
         public static string TelegramToString(Telegram telegram)
         {
+            if (telegram.CommandType?.ValueType == Protocol.ValueType.VT_UNKNOWN) return null;
             return string.Format("Dst: {0}, Src: {1}, Type: {2}, Command: {3}",
                 AddressToString(telegram.Destination),
                 AddressToString(telegram.Source),
                 TelegramTypeToString(telegram.Type),
-                CommandToString(telegram.Command));
+                CommandToString(telegram));
         }
 
         public static string ByteToHex(byte data) 

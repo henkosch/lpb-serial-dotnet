@@ -15,7 +15,10 @@ namespace LpbSerialDotnet.Protocol
         public byte Source { get; set; }
         public byte[] Unknown1 { get; set; }
         public byte Type { get; set; }
-        public uint Command { get; set; }
+        public uint CommandId { get; set; }
+        public CommandType CommandType { get; set; }
+        public float Temperature { get; set; }
+        public ushort Crc { get; set; }
 
         public Telegram(IEnumerable<byte> dataBytes)
         {
@@ -30,7 +33,25 @@ namespace LpbSerialDotnet.Protocol
             Source = reader.ReadByte();
             Unknown1 = reader.ReadBytes(4);
             Type = reader.ReadByte();
-            Command = (uint)IPAddress.NetworkToHostOrder(reader.ReadInt32());
+            CommandId = (uint)IPAddress.NetworkToHostOrder(reader.ReadInt32());
+
+            CommandType = CommandType.FromId(CommandId);
+            if (CommandType != null)
+            {
+                switch (CommandType.ValueType)
+                {
+                    case ValueType.VT_TEMP:
+                        var enable = reader.ReadByte();
+                        var value = (ushort)IPAddress.NetworkToHostOrder(reader.ReadInt16());
+                        Temperature = value / 64.0f;
+                    break;
+                    default:
+                    break;
+                }
+            }
+
+            reader.BaseStream.Seek(-2, SeekOrigin.End);
+            Crc = reader.ReadUInt16();
         }
     }
 }
